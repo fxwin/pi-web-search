@@ -1,6 +1,6 @@
 # pi-web-search
 
-[Pi](https://pi.dev) extension that enables hosted web search for supported providers. It currently supports direct OpenAI Responses API models.
+[Pi](https://pi.dev) extension that enables hosted web search for supported providers. It currently supports direct OpenAI and OpenAI Codex Responses API models.
 
 ## Features
 
@@ -12,10 +12,10 @@
 
 ## Requirements
 
-- pi with an OpenAI API key configured through `/login` or `OPENAI_API_KEY`
-- a direct OpenAI model using the Responses API
+- pi authenticated with an OpenAI API key or OpenAI Codex subscription through `/login`
+- a direct OpenAI or OpenAI Codex model using the Responses API
 
-The extension does not enable web search for OpenAI-compatible proxies, OpenAI Codex subscription models, or non-OpenAI providers.
+The extension does not enable web search for OpenAI-compatible proxies or non-OpenAI providers.
 
 ## Setup
 
@@ -29,7 +29,7 @@ The extension does not enable web search for OpenAI-compatible proxies, OpenAI C
    /reload
    ```
 
-3. Select a direct OpenAI model and ask a question that benefits from current information. The model decides whether to search.
+3. Select a direct OpenAI or OpenAI Codex model and ask a question that benefits from current information. The model decides whether to search.
 
 ## Commands
 

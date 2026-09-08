@@ -10,8 +10,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null;
 }
 
-function isDirectOpenAIResponsesModel(model: { provider?: string; api?: string } | undefined): boolean {
-	return model?.provider === "openai" && model.api === "openai-responses";
+function supportsHostedWebSearch(model: { provider?: string; api?: string } | undefined): boolean {
+	return (
+		(model?.provider === "openai" && model.api === "openai-responses") ||
+		(model?.provider === "openai-codex" && model.api === "openai-codex-responses")
+	);
 }
 
 function hasWebSearchTool(tools: unknown[]): boolean {
@@ -32,10 +35,10 @@ export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 
 	function statusText(model: { provider?: string; api?: string } | undefined): string {
 		if (!enabled) return "OpenAI web search is off for this session.";
-		if (isDirectOpenAIResponsesModel(model)) {
-			return "OpenAI web search is on. The model can search when it is useful.";
+		if (supportsHostedWebSearch(model)) {
+			return "Web search is on. The model can search when it is useful.";
 		}
-		return "OpenAI web search is on, but only applies to direct OpenAI Responses API models.";
+		return "Web search is on, but only applies to direct OpenAI or OpenAI Codex Responses API models.";
 	}
 
 	pi.on("session_start", (_event, ctx) => {
@@ -66,7 +69,7 @@ export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 	});
 
 	pi.on("before_provider_request", (event, ctx) => {
-		if (!enabled || !isDirectOpenAIResponsesModel(ctx.model) || !isRecord(event.payload)) return;
+		if (!enabled || !supportsHostedWebSearch(ctx.model) || !isRecord(event.payload)) return;
 
 		const existingTools = Array.isArray(event.payload.tools) ? event.payload.tools : [];
 		if (hasWebSearchTool(existingTools)) return;
