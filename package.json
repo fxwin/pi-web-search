@@ -1,0 +1,13 @@
+{
+  "name": "pi-openai-web-search",
+  "version": "0.1.0",
+  "description": "Pi extension that enables OpenAI Responses API web search.",
+  "keywords": ["pi-package"],
+  "license": "MIT",
+  "pi": {
+    "extensions": ["./index.ts"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  }
+}
