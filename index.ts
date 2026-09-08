@@ -1,4 +1,5 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { visibleWidth } from "@earendil-works/pi-tui";
 
 const STATE_ENTRY_TYPE = "web-search-config";
 const SEARCH_CONTEXT_SIZES = ["low", "medium", "high"];
@@ -27,8 +28,20 @@ export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 	let enabled = true;
 	let contextSize = "medium";
 
-	function updateStatus(ctx: { ui: { setWidget(id: string, content: string[] | undefined, options?: { placement?: "aboveEditor" | "belowEditor" }): void } }) {
-		ctx.ui.setWidget("web-search", [`web search: ${enabled ? "on" : "off"}`], { placement: "aboveEditor" });
+	function updateStatus(ctx: { ui: { setWidget(id: string, content: unknown, options?: { placement?: "aboveEditor" | "belowEditor" }): void } }) {
+		ctx.ui.setWidget(
+			"web-search",
+			(_tui: unknown, theme: { fg(color: string, text: string): string }) => {
+				const text = theme.fg("dim", `web search: ${enabled ? "on" : "off"}`);
+				return {
+					render(width: number) {
+						return [" ".repeat(Math.max(0, width - visibleWidth(text))) + text];
+					},
+					invalidate() {},
+				};
+			},
+			{ placement: "aboveEditor" },
+		);
 	}
 
 	function restoreState(ctx: {
@@ -36,7 +49,7 @@ export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 		ui: {
 			setWidget(
 				id: string,
-				content: string[] | undefined,
+				content: unknown,
 				options?: { placement?: "aboveEditor" | "belowEditor" },
 			): void;
 		};
