@@ -27,11 +27,20 @@ export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 	let enabled = true;
 	let contextSize = "medium";
 
-	function updateStatus(ctx: { ui: { setStatus(id: string, text: string | undefined): void } }) {
-		ctx.ui.setStatus("web-search", `web search: ${enabled ? "on" : "off"}`);
+	function updateStatus(ctx: { ui: { setWidget(id: string, content: string[] | undefined, options?: { placement?: "aboveEditor" | "belowEditor" }): void } }) {
+		ctx.ui.setWidget("web-search", [`web search: ${enabled ? "on" : "off"}`], { placement: "aboveEditor" });
 	}
 
-	function restoreState(ctx: { sessionManager: { getBranch(): unknown[] }; ui: { setStatus(id: string, text: string | undefined): void } }) {
+	function restoreState(ctx: {
+		sessionManager: { getBranch(): unknown[] };
+		ui: {
+			setWidget(
+				id: string,
+				content: string[] | undefined,
+				options?: { placement?: "aboveEditor" | "belowEditor" },
+			): void;
+		};
+	}) {
 		enabled = true;
 		contextSize = "medium";
 		for (const entry of ctx.sessionManager.getBranch()) {
@@ -59,6 +68,10 @@ export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 
 	pi.on("session_tree", (_event, ctx) => {
 		restoreState(ctx);
+	});
+
+	pi.on("session_shutdown", (_event, ctx) => {
+		ctx.ui.setWidget("web-search", undefined);
 	});
 
 	pi.registerCommand("websearch", {

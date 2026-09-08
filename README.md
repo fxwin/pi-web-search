@@ -9,6 +9,7 @@
 - uses a configurable `search_context_size` (`low`, `medium`, or `high`), defaulting to `medium`
 - preserves Pi's existing local tools alongside web search
 - provides a session-scoped `/websearch` toggle and context-size setting
+- shows `web search: on/off` above the text input
 
 ## Requirements
 
