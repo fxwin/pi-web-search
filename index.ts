@@ -32,7 +32,8 @@ export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 		ctx.ui.setWidget(
 			"web-search",
 			(_tui: unknown, theme: { fg(color: string, text: string): string }) => {
-				const text = theme.fg("dim", `web search: ${enabled ? "on" : "off"}`);
+				const text =
+					theme.fg("dim", "web search: ") + theme.fg(enabled ? "text" : "dim", enabled ? "on" : "off");
 				return {
 					render(width: number) {
 						return [" ".repeat(Math.max(0, width - visibleWidth(text))) + text];
