@@ -6,9 +6,9 @@
 
 - adds OpenAI's current `{ type: "web_search" }` hosted tool to every eligible request
 - leaves search decisions to the model
-- uses OpenAI's default `search_context_size` (`medium`)
+- uses a configurable `search_context_size` (`low`, `medium`, or `high`), defaulting to `medium`
 - preserves Pi's existing local tools alongside web search
-- provides a session-scoped `/web-search` toggle
+- provides a session-scoped `/websearch` toggle and context-size setting
 
 ## Requirements
 
@@ -34,12 +34,14 @@ The extension does not enable web search for OpenAI-compatible proxies or non-Op
 ## Commands
 
 ```text
-/web-search on
-/web-search off
-/web-search status
+/websearch
+/websearch low
+/websearch medium
+/websearch high
+/websearch status
 ```
 
-Web search is enabled by default. The toggle is stored in the current session and follows session-tree navigation. A new session starts enabled.
+Web search is enabled by default. `/websearch` toggles it on or off; `/websearch <size>` sets the context size and enables search. The settings are stored in the current session and follow session-tree navigation. A new session starts enabled with medium context.
 
 ## Notes
 

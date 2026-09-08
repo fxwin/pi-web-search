@@ -1,9 +1,11 @@
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
-const STATE_ENTRY_TYPE = "openai-web-search-config";
+const STATE_ENTRY_TYPE = "web-search-config";
+const SEARCH_CONTEXT_SIZES = ["low", "medium", "high"];
 
 interface WebSearchState {
 	enabled: boolean;
+	contextSize: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -23,20 +25,30 @@ function hasWebSearchTool(tools: unknown[]): boolean {
 
 export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 	let enabled = true;
+	let contextSize = "medium";
 
-	function restoreState(ctx: { sessionManager: { getBranch(): unknown[] } }) {
+	function updateStatus(ctx: { ui: { setStatus(id: string, text: string | undefined): void } }) {
+		ctx.ui.setStatus("web-search", `web search: ${enabled ? "on" : "off"}`);
+	}
+
+	function restoreState(ctx: { sessionManager: { getBranch(): unknown[] }; ui: { setStatus(id: string, text: string | undefined): void } }) {
 		enabled = true;
+		contextSize = "medium";
 		for (const entry of ctx.sessionManager.getBranch()) {
 			if (!isRecord(entry) || entry.type !== "custom" || entry.customType !== STATE_ENTRY_TYPE) continue;
 			if (!isRecord(entry.data) || typeof entry.data.enabled !== "boolean") continue;
 			enabled = entry.data.enabled;
+			if (typeof entry.data.contextSize === "string" && SEARCH_CONTEXT_SIZES.includes(entry.data.contextSize)) {
+				contextSize = entry.data.contextSize;
+			}
 		}
+		updateStatus(ctx);
 	}
 
 	function statusText(model: { provider?: string; api?: string } | undefined): string {
-		if (!enabled) return "OpenAI web search is off for this session.";
+		if (!enabled) return "Web search is off for this session.";
 		if (supportsHostedWebSearch(model)) {
-			return "Web search is on. The model can search when it is useful.";
+			return `Web search is on (${contextSize}). The model can search when it is useful.`;
 		}
 		return "Web search is on, but only applies to direct OpenAI or OpenAI Codex Responses API models.";
 	}
@@ -49,21 +61,27 @@ export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 		restoreState(ctx);
 	});
 
-	pi.registerCommand("web-search", {
-		description: "Toggle OpenAI Responses API web search: on, off, or status",
+	pi.registerCommand("websearch", {
+		description: "Toggle web search or set its search context size",
 		handler: async (args, ctx) => {
-			const action = args.trim().toLowerCase() || "status";
-			if (action === "status") {
-				ctx.ui.notify(statusText(ctx.model), "info");
+			const value = args.trim().toLowerCase();
+			if (!value) {
+				enabled = !enabled;
+			} else if (SEARCH_CONTEXT_SIZES.includes(value)) {
+				contextSize = value;
+				enabled = true;
+			} else if (value === "on" || value === "off") {
+				enabled = value === "on";
+			} else if (value === "status") {
+				ctx.ui.notify(`${statusText(ctx.model)} Context size: ${contextSize}.`, "info");
 				return;
-			}
-			if (action !== "on" && action !== "off") {
-				ctx.ui.notify("Usage: /web-search [on|off|status]", "warning");
+			} else {
+				ctx.ui.notify("Usage: /websearch [low|medium|high|on|off|status]", "warning");
 				return;
 			}
 
-			enabled = action === "on";
-			pi.appendEntry<WebSearchState>(STATE_ENTRY_TYPE, { enabled });
+			pi.appendEntry<WebSearchState>(STATE_ENTRY_TYPE, { enabled, contextSize });
+			updateStatus(ctx);
 			ctx.ui.notify(statusText(ctx.model), "info");
 		},
 	});
@@ -76,7 +94,7 @@ export default function openAIWebSearchExtension(pi: ExtensionAPI) {
 
 		return {
 			...event.payload,
-			tools: [...existingTools, { type: "web_search" }],
+			tools: [...existingTools, { type: "web_search", search_context_size: contextSize }],
 		};
 	});
 }
