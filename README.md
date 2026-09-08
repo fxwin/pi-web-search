@@ -1,6 +1,6 @@
-# pi-openai-web-search
+# pi-web-search
 
-[Pi](https://pi.dev) extension that enables OpenAI's hosted web-search tool for direct OpenAI Responses API models.
+[Pi](https://pi.dev) extension that enables hosted web search for supported providers. It currently supports direct OpenAI Responses API models.
 
 ## Features
 
@@ -21,7 +21,7 @@ The extension does not enable web search for OpenAI-compatible proxies, OpenAI C
 
 1. Install the extension:
    ```bash
-   pi install git:github.com/fxwin/pi-openai-web-search
+   pi install git:github.com/fxwin/pi-web-search
    ```
 
 2. Reload pi:
